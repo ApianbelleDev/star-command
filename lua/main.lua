@@ -9,6 +9,15 @@ function love.load()
 	ship.x = 80 - 16
 	ship.y = 144 - 16
 
+	bullet = {}
+	-- bullet.image = love.graphics.newImage("res/bullet.png", nil)
+
+	-- store bullet off screen
+	bullet.x = -100
+	bullet.y = -100
+	bullet.isShot = false
+	bullet.count = 1
+
 	-- override default filter so game when scaled up doesn't look blurry
 	love.graphics.setDefaultFilter("nearest", "nearest", 0)
 
@@ -41,6 +50,29 @@ function love.update()
 	if ship.x >= 160 - 32 then
 		ship.x = 160 - 32
 	end
+
+	-- bullet logic
+	if bullet.isShot == true then
+		bullet.y = bullet.y - 1
+	end
+	
+	if love.keyboard.isDown("x") or love.keyboard.isDown("c") then
+		if bullet.count == 1 then
+			bullet.x = ship.x + 16
+			bullet.y = ship.y
+			bullet.count = 0
+			bullet.isShot = true
+		end
+	end
+
+	-- destroy bullet if it reaches the top of the screen
+	if bullet.y == 0 then
+		bullet.isShot = false
+		bullet.count = 1
+		bullet.x = -100
+		bullet.y = -100
+	end
+
 end
 
 function love.draw()
@@ -49,13 +81,15 @@ function love.draw()
 	love.graphics.clear();
 
 	-- draw to the canvas
-	love.graphics.print("x = "..tostring(ship.x));
 	love.graphics.draw(ship.image, ship.x, ship.y);
+	love.graphics.rectangle("fill", bullet.x, bullet.y, 4, 4);
 
 	-- go back to drawing on screen
 	love.graphics.setCanvas()
+	love.graphics.print("ship x = "..tostring(ship.x));
+	love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16);
+	love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32);
 
 	-- render canvas on screen
-	love.graphics.draw(canvas, 0, 0, 0, screenScale)
-	
+	love.graphics.draw(canvas, 0, 0, 0, screenScale)	
 end
