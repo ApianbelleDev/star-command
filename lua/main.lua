@@ -24,7 +24,23 @@ function love.load()
 end
 
 function love.update()
+	-- ship left/right movement
+	if love.keyboard.isDown("left") then
+		ship.x = ship.x - 1
+	end
 
+	if love.keyboard.isDown("right") then
+		ship.x = ship.x + 1
+	end
+	
+	-- stop ship if it hits screen bounds
+	if ship.x <= 0 then
+		ship.x = 0	
+	end
+
+	if ship.x >= 160 - 32 then
+		ship.x = 160 - 32
+	end
 end
 
 function love.draw()
@@ -33,7 +49,7 @@ function love.draw()
 	love.graphics.clear();
 
 	-- draw to the canvas
-	love.graphics.print("160x144");
+	love.graphics.print("x = "..tostring(ship.x));
 	love.graphics.draw(ship.image, ship.x, ship.y);
 
 	-- go back to drawing on screen
