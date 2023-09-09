@@ -19,13 +19,14 @@ function love.load()
 	
 	ship.x = 80 - 16
 	ship.y = 144 - 16
-	ship.speed = 5
+	ship.speed = 60
 
 	-- store bullet off screen
 	bullet.x = -100
 	bullet.y = -100
 	bullet.w = 4
 	bullet.h = bullet.w
+	bullet.speed = 70
 	bullet.isShot = false
 	bullet.count = 1
 
@@ -35,7 +36,7 @@ function love.load()
 	comet.y = -200
 	comet.w = 16
 	comet.h = comet.w
-	comet.speed = 0.5
+	comet.speed = 30
 	comet.spawnTimer = 120
 	comet.isDestroyed = false
 	comet.isMoving = false
@@ -63,78 +64,75 @@ function love.keypressed( key )
 	--TODO: menu logic
 end
 
-function update()
-	-- increment timers at the start of the game
-	comet.spawnTimer = comet.spawnTimer - 1
-
-	-- ship left/right movement and shooting
-	if love.keyboard.isDown("left") then
-		ship.x = ship.x - 1
-	end
-	
-	if love.keyboard.isDown("right") then
-		ship.x = ship.x + 1
-	end
-	if love.keyboard.isDown("x") or love.keyboard.isDown("c") then
-		if bullet.count == 1 then
-			bullet.x = ship.x + 16
-			bullet.y = ship.y
-			bullet.count = 0
-			bullet.isShot = true
-		end
-	end	
-		-- stop ship if it hits screen bounds
-	if ship.x <= 0 then
-		ship.x = 0	
-	end
-
-	if ship.x >= 160 - 32 then
-		ship.x = 160 - 32
-	end
-	
-	-- bullet logic
-	if bullet.isShot == true then
-		bullet.y = bullet.y - 1
-	end
-	-- destroy bullet if it reaches the top of the screen
-	if bullet.y == 0 then
-		bullet.isShot = false
-		bullet.count = 1
-		bullet.x = -100
-		bullet.y = -100
-	end
-
-	-- bullet to comet collision
-	if bullet.y >= comet.y and bullet.y <= comet.y + comet.h and bullet.x >= comet.x and bullet.x <= comet.x + comet.w then	
-		comet.isMoving = false
-		comet.x = love.math.random(1, sx - 16)
-		comet.y = -200
-		comet.spawnTimer = 120
-
-		bullet.x = -100
-		bullet.y = -100	
-		bullet.count = 1
-	end	
-
-	-- comet logic
-	if comet.spawnTimer == 0 then
-		comet.y = 0
-		comet.isMoving = true
-	end
-	if comet.isMoving then
-		comet.y = comet.y + comet.speed
-	end
-		
-	-- destroy comet if it hits the ground, and trigger game over
-	if comet.y >= sy then
-		game.gameOver = true
-		
-	end
+function resetBullet()
+	bullet.isShot = false
+	bullet.count = 1
+	bullet.x = -100
+	bullet.y = -100
 end
 
-function love.update()
+function love.update(dt)
 	if not game.isPaused then
-		update()
+		-- increment timers at the start of the game
+		comet.spawnTimer = comet.spawnTimer - 1
+		
+		-- ship left/right movement and shooting
+		if love.keyboard.isDown("left") then
+			ship.x = ship.x - ship.speed * dt
+		end
+			
+		if love.keyboard.isDown("right") then
+			ship.x = ship.x + ship.speed * dt
+		end
+		-- stop ship if it hits screen bounds
+		if ship.x <= 0 then
+			ship.x = 0	
+		end
+		
+		if ship.x >= 160 - 32 then
+			ship.x = 160 - 32
+		end
+			
+		if love.keyboard.isDown("x") or love.keyboard.isDown("c") then
+			if bullet.count == 1 then
+				bullet.x = ship.x + 16
+				bullet.y = ship.y
+				bullet.count = 0
+				bullet.isShot = true
+			end
+		end
+			-- bullet logic
+		if bullet.isShot == true then
+			bullet.y = bullet.y - bullet.speed * dt
+		end	
+		-- destroy bullet if it reaches the top of the screen
+		if bullet.y == 0 then
+			resetBullet()
+		end
+		
+		-- bullet to comet collision
+		if bullet.y >= comet.y and bullet.y <= comet.y + comet.h and bullet.x >= comet.x and bullet.x <= comet.x + comet.w then	
+			comet.isMoving = false
+			comet.x = love.math.random(1, sx - 16)
+			comet.y = -200
+			comet.spawnTimer = 120
+
+			resetBullet()
+		end	
+		
+		-- comet logic
+		if comet.spawnTimer == 0 then
+			comet.y = 0
+			comet.isMoving = true
+		end
+		if comet.isMoving then
+				comet.y = comet.y + comet.speed * dt
+		end
+				
+		-- destroy comet if it hits the ground, and trigger game over
+		if comet.y >= sy then
+			game.gameOver = true	
+		end
 	end
 end
 
