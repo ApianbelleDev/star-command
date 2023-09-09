@@ -1,0 +1,4 @@
+/home/bella/proj/star_command_psx/build/CMakeFiles/template.dir
+/home/bella/proj/star_command_psx/build/CMakeFiles/iso.dir
+/home/bella/proj/star_command_psx/build/CMakeFiles/edit_cache.dir
+/home/bella/proj/star_command_psx/build/CMakeFiles/rebuild_cache.dir

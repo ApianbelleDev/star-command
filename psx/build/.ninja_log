@@ -1,0 +1,13 @@
+# ninja log v5
+0	3	1690745663601426896	CMakeFiles/template.dir/src/asm/turret.s.obj	c00ae2f7fef18bda
+0	3	1690745663601426896	CMakeFiles/template.dir/src/asm/comet.s.obj	10ff5396c9693b1b
+0	51	1690745663649427100	CMakeFiles/template.dir/src/main.c.obj	db238c47163a964d
+51	61	1690745663661427150	template.elf	96e9ae13f89b8314
+51	61	1690745663661427150	template.exe	96e9ae13f89b8314
+51	61	1690745663661427150	template.map	96e9ae13f89b8314
+51	61	1690745663661427150	/home/bella/proj/star_command_psx/build/template.exe	96e9ae13f89b8314
+51	61	1690745663661427150	/home/bella/proj/star_command_psx/build/template.map	96e9ae13f89b8314
+61	66	1690745663665427168	star_command.bin	1737a6877373de4f
+61	66	1690745663665427168	star_command.cue	1737a6877373de4f
+61	66	1690745663665427168	/home/bella/proj/star_command_psx/build/star_command.bin	1737a6877373de4f
+61	66	1690745663665427168	/home/bella/proj/star_command_psx/build/star_command.cue	1737a6877373de4f
