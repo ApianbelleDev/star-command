@@ -13,10 +13,11 @@ function love.load()
 
 	game.isPaused   = false
 	game.gameOver   = false
-	game.altPalette = false
+	game.altPalette = true
 	game.text = "nothing" -- debug text
-	game.state = "TITLE"
+	game.state = "GAME OVER"
 	game.cur = 0
+	game.font = love.graphics.setNewFont("res/fonts/monobit.ttf", 16)
 
 	game.bg    = love.graphics.newImage("res/bg.png")
 	game.bg_dmg = love.graphics.newImage("res/bg_dmg.png")
@@ -69,8 +70,7 @@ function love.load()
 end
 
 function love.keypressed( key )
-	if game.state == "TITLE" then
-		if key == "return" then
+		if key == "return" and game.state == "TITLE" then
 			--menu options
 			if game.cur == 0 then
 				game.state = "GAMEPLAY"
@@ -79,6 +79,15 @@ function love.keypressed( key )
 			elseif game.cur == 2 then
 				love.window.close()
 			end
+		elseif key == "return" and game.state == "GAMEPLAY" then
+			--pausing logic
+			if not game.isPaused then
+				game.isPaused = true
+			elseif game.isPaused then
+				game.isPaused = false
+			end
+		elseif key == "return" and game.state == "GAME OVER" then
+			game.state = "TITLE"
 		end
 
 		if key == "up" then
@@ -102,18 +111,6 @@ function love.keypressed( key )
 				game.altPalette = false
 			end
 		end
-	end
-
-	if game.state == "GAMEPLAY" then
-		-- pause logic
-		if key == "p" then
-			if not game.isPaused then
-				game.isPaused = true
-			elseif game.isPaused then
-				game.isPaused = false
-			end
-		end
-	end
 end
 
 function resetBullet()
@@ -187,6 +184,10 @@ function love.update(dt)
 			if comet.y >= sy then
 				game.gameOver = true	
 			end
+
+			if game.gameOver then
+				game.state = "GAME OVER"
+			end
 		end
 	end
 end
@@ -197,8 +198,12 @@ function love.draw()
 
 		if game.state == "TITLE" then
 			if not game.altPalette then
+				love.graphics.clear()
+				love.graphics.setColor(1, 1, 1, 1)
 				love.graphics.draw(game.title, 0, 0)
 			elseif game.altPalette then
+				love.graphics.clear()
+				love.graphics.setColor(1, 1, 1, 1)
 				love.graphics.draw(game.title_dmg, 0, 0)
 			end
 		end
@@ -206,16 +211,34 @@ function love.draw()
 		
 			if not game.altPalette then
 				love.graphics.clear()
+				love.graphics.setColor(1, 1, 1, 1)
 				love.graphics.draw(game.bg, 0, 0)
 				love.graphics.draw(ship.image, math.floor(ship.x), math.floor(ship.y))
 				love.graphics.draw(bullet.image, math.floor(bullet.x), math.floor(bullet.y))
 				love.graphics.draw(comet.image, math.floor(comet.x), math.floor(comet.y))
 			elseif game.altPalette then
 				love.graphics.clear()
+				love.graphics.setColor(1, 1, 1, 1)
 				love.graphics.draw(game.bg_dmg, 0, 0)
 				love.graphics.draw(ship.image_dmg, math.floor(ship.x), math.floor(ship.y))
 				love.graphics.draw(bullet.image_dmg, math.floor(bullet.x), math.floor(bullet.y))
 				love.graphics.draw(comet.image_dmg, math.floor(comet.x), math.floor(comet.y))
+			end
+		end
+		
+		if game.state == "OPTIONS" then
+		end	
+		if game.state == "GAME OVER" then
+			if not game.altPalette then
+				love.graphics.clear()
+				love.graphics.setColor(1, 1, 1, 1)
+				love.graphics.print("GAME OVER", sx / 2 - 20, sy / 2 - 16)
+			elseif game.altPalette then
+				love.graphics.clear()
+				love.graphics.setBackgroundColor(215/255, 232/255, 148/255, 1)
+				love.graphics.setColor(1, 1, 1, 1)
+				love.graphics.setColor(32/255, 70/255, 49/255, 1)
+				love.graphics.print("GAME OVER", sx / 2 - 20, sy / 2 - 16)
 			end
 		end
 
