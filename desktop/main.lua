@@ -11,15 +11,20 @@ function love.load()
 	bullet = {}
 	comet  = {}
 
-	game.isPaused = false
-	game.gameOver = false
+	game.isPaused   = false
+	game.gameOver   = false
+	game.altPalette = false
 	game.text = "nothing" -- debug text
-	
-	ship.image = love.graphics.newImage("res/ship.png", nil)
+
+	game.bg    = love.graphics.newImage("res/bg.png")
+	game.bg_dmg = love.graphics.newImage("res/bg_dmg.png")
 	
 	ship.x = 80 - 16
 	ship.y = 144 - 16
 	ship.speed = 60
+
+	ship.image    = love.graphics.newImage("res/ship.png")
+	ship.image_dmg = love.graphics.newImage("res/ship_dmg.png")
 
 	-- store bullet off screen
 	bullet.x = -100
@@ -30,7 +35,9 @@ function love.load()
 	bullet.isShot = false
 	bullet.count = 1
 
-	comet.image = love.graphics.newImage("res/comet.png", nil)
+	bullet.image     = love.graphics.newImage("res/bullet.png")
+	bullet.image_dmg = love.graphics.newImage("res/bullet_dmg.png")
+
 	
 	comet.x = love.math.random(1, sx - 16)
 	comet.y = -200
@@ -41,6 +48,10 @@ function love.load()
 	comet.isDestroyed = false
 	comet.isMoving = false
 
+	comet.image    = love.graphics.newImage("res/comet.png")
+	comet.image_dmg = love.graphics.newImage("res/comet_dmg.png")
+
+	
 	
 	-- override default filter so game when scaled up doesn't look blurry
 	love.graphics.setDefaultFilter("nearest", nil, 0)
@@ -55,10 +66,21 @@ end
 
 function love.keypressed( key )
 	-- pause logic
-	if not game.isPaused and key == "return" then
-		game.isPaused = true
-	elseif game.isPaused and key == "return" then
-		game.isPaused = false
+	if key == "return" then
+		if not game.isPaused then
+			game.isPaused = true
+		elseif game.isPaused then
+			game.isPaused = false
+		end
+	end
+
+	-- switch between alternate palette and normal palette
+	if key == "rshift" then
+		if not game.altPalette then
+			game.altPalette = true
+		elseif game.altPalette then
+			game.altPalette = false
+		end
 	end
 
 	--TODO: menu logic
@@ -139,15 +161,22 @@ end
 function love.draw()
 	
 	love.graphics.setCanvas(canvas)
-	love.graphics.clear();
+		love.graphics.clear()
+		if not game.altPalette then
+			love.graphics.draw(game.bg, 0, 0)
+			love.graphics.draw(ship.image, math.floor(ship.x), math.floor(ship.y))
+			love.graphics.draw(bullet.image, math.floor(bullet.x), math.floor(bullet.y))
+			love.graphics.draw(comet.image, math.floor(comet.x), math.floor(comet.y))
+		elseif game.altPalette then
+			love.graphics.clear()
+			love.graphics.draw(game.bg_dmg, 0, 0)
+			love.graphics.draw(ship.image_dmg, math.floor(ship.x), math.floor(ship.y))
+			love.graphics.draw(bullet.image_dmg, math.floor(bullet.x), math.floor(bullet.y))
+			love.graphics.draw(comet.image_dmg, math.floor(comet.x), math.floor(comet.y))
+		end
 
-	-- draw to the canvas
-	love.graphics.draw(ship.image, ship.x, ship.y)
-	love.graphics.rectangle("fill", bullet.x, bullet.y, 4, 4)
-	love.graphics.draw(comet.image, comet.x, comet.y)
-
-	-- go back to drawing on screen
 	love.graphics.setCanvas()
+	-- go back to drawing on screen
 	love.graphics.print("ship x = "..tostring(ship.x))
 	love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
 	love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
@@ -157,6 +186,7 @@ function love.draw()
 	love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
 	love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
 	love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
+	love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
 
 	-- render canvas on screen
 	love.graphics.draw(canvas, 0, 0, 0, screenScale)	
