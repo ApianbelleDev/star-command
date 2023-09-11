@@ -1,9 +1,9 @@
-local sx, sy
+local gameWidth, gameHeight
 local screenScale
 
 function love.load()
-	sx = 160
-	sy = 144
+	gameWidth = 160
+	gameHeight = 144
 
 	-- setup tables for objects
 	game   = {}
@@ -13,7 +13,7 @@ function love.load()
 
 	game.isPaused   = false
 	game.gameOver   = false
-	game.altPalette = false
+	game.altPalette = true
 	game.text = "nothing" -- debug text
 	game.state = "TITLE"
 	game.cur = 0
@@ -48,35 +48,37 @@ function love.load()
 	bullet.image_dmg = love.graphics.newImage("res/bullet_dmg.png")
 
 	
-	comet.x = love.math.random(1, sx - 16)
+	comet.x = love.math.random(1, gameWidth - 16)
 	comet.y = -200
-	comet.sx = 0
-	comet.sy = 0
+	comet.gameWidth = 0
+	comet.gameHeight = 0
 	comet.w = 16
 	comet.h = comet.w
 	comet.speed = 30
-	comet.spawnTimer = 60
-	comet.isDestroyed = false
+	comet.spawnTimer = 60 
 	comet.isMoving = false
 
 	comet.image    = love.graphics.newImage("res/comet.png")
 	comet.image_dmg = love.graphics.newImage("res/comet_dmg.png")
 
-	
-	
 	-- override default filter so game when scaled up doesn't look blurry
 	love.graphics.setDefaultFilter("nearest", nil, 0)
 
-	screenScale = 4.0
+	screenScale = 4
 	-- create canvas to draw to that will be scaled later
-	canvas = love.graphics.newCanvas(sx, sy)
+	canvas = love.graphics.newCanvas(gameWidth, gameHeight)
 
 	-- override default screen res
-	love.window.setMode(sx * 4, sy * 4)
+	love.window.setMode(gameWidth * 4, gameHeight * 4)
 end
 
 function love.keypressed(key)
 	if game.state == "TITLE" then
+		-- reset comet pos so if game restarts, it doesn't immediately game-over again
+		comet.isMoving = false
+		comet.x = love.math.random(0, gameWidth - comet.w)
+		comet.y = -200
+		comet.spawnTimer = 60
 		game.startTimer = 120
 		if key == "return" then
 			if game.cur == 0 then
@@ -96,6 +98,11 @@ function love.keypressed(key)
 		if key == "return" then
 			game.isPaused = not game.isPaused
 		end
+	end
+
+	-- use right shift to change palettes for testing purposes only!!!!!!!
+	if key == "rshift" then
+		game.altPalette = not game.altPalette
 	end
 end
 
@@ -151,10 +158,10 @@ function love.update(dt)
 				-- bullet to comet collision
 				if bullet.y >= comet.y and bullet.y <= comet.y + comet.h and bullet.x >= comet.x and bullet.x <= comet.x + comet.w then	
 					comet.isMoving = false
-					comet.x = love.math.random(1, sx - 16)
+					comet.x = love.math.random(1, gameWidth - 16)
 					comet.y = -200
 					comet.spawnTimer = 60
-					comet.isDestroyed = true
+
 					resetBullet()
 				end	
 				-- comet logic
@@ -163,13 +170,12 @@ function love.update(dt)
 					comet.isMoving = true
 				end
 				if comet.isMoving then
-					comet.isDestroyed = false
 					comet.y = comet.y + comet.speed * dt
 					game.scoreTimer = 40
 				end
 						
 				-- destroy comet if it hits the ground, and trigger game over
-				if comet.y >= sy then
+				if comet.y >= gameHeight then
 					game.gameOver = true
 				
 				end
@@ -212,11 +218,9 @@ function love.draw()
 		if game.state == "TITLE" then
 			if not game.altPalette then
 				love.graphics.clear()
-				love.graphics.setColor(1, 1, 1, 1)
 				love.graphics.draw(game.title, 0, 0)
 			elseif game.altPalette then
 				love.graphics.clear()
-				love.graphics.setColor(1, 1, 1, 1)
 				love.graphics.draw(game.title_dmg, 0, 0)
 			end
 		end
@@ -225,16 +229,18 @@ function love.draw()
 			if not game.altPalette then
 				love.graphics.clear()
 				love.graphics.setColor(1, 1, 1, 1)
-				--love.graphics.draw(game.bg, 0, 0)
+				love.graphics.draw(game.bg, 0, 0)
 				love.graphics.draw(ship.image, math.floor(ship.x), math.floor(ship.y))
 				love.graphics.draw(bullet.image, math.floor(bullet.x), math.floor(bullet.y))
 				love.graphics.draw(comet.image, math.floor(comet.x), math.floor(comet.y))
 				if game.startTimer > 0 then
-					love.graphics.print("GET READY", sx / 2 - 20, sy / 2 - 16)
+					love.graphics.print("GET READY", gameWidth / 2 - 20, gameHeight / 2 - 16)
+				end
+				if game.isPaused then
+					love.graphics.print("PAUSE", gameWidth / 2 - 10, gameWidth / 2 - 16)
 				end
 			elseif game.altPalette then
 				love.graphics.clear()
-				love.graphics.setColor(1, 1, 1, 1)
 				love.graphics.draw(game.bg_dmg, 0, 0)
 				love.graphics.draw(ship.image_dmg, math.floor(ship.x), math.floor(ship.y))
 				love.graphics.draw(bullet.image_dmg, math.floor(bullet.x), math.floor(bullet.y))
@@ -245,8 +251,14 @@ function love.draw()
 							end
 						end
 				if game.startTimer > 0 then
-					love.graphics.setColor(32/255, 70/255, 49/255, 1)
-					love.graphics.print("GET READY", sx / 2 - 20, sy / 2 - 16)
+					love.graphics.setColor(32/255, 70/255, 49/255)
+					love.graphics.print("GET READY", gameWidth / 2 - 20, gameHeight / 2 - 16)
+					love.graphics.setColor(1, 1, 1)
+				end
+				if game.isPaused then
+					love.graphics.setColor(32/255, 70/255, 49/255)
+					love.graphics.print("PAUSE", gameWidth / 2 - 10, gameHeight / 2 - 16)
+					love.graphics.setColor(1, 1, 1)
 				end
 			end
 		end
@@ -255,14 +267,11 @@ function love.draw()
 		end	
 		if game.state == "GAME OVER" then
 			if not game.altPalette then
-				love.graphics.setColor(1, 1, 1, 1)
-				love.graphics.print("GAME OVER", sx / 2 - 20, sy / 2 - 16)
+				love.graphics.print("GAME OVER", gameWidth / 2 - 20, gameHeight / 2 - 16)
 			elseif game.altPalette then
-				love.graphics.clear()
-				love.graphics.setBackgroundColor(215/255, 232/255, 148/255, 1)
-				love.graphics.setColor(1, 1, 1, 1)
-				love.graphics.setColor(32/255, 70/255, 49/255, 1)
-				love.graphics.print("GAME OVER", sx / 2 - 20, sy / 2 - 16)
+				love.graphics.setColor(32/255, 70/255, 49/255)
+				love.graphics.print("GAME OVER", gameWidth / 2 - 20, gameHeight / 2 - 16)
+				love.graphics.setColor(1, 1, 1)
 			end
 		end
 
