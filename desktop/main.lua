@@ -75,47 +75,28 @@ function love.load()
 	love.window.setMode(sx * 4, sy * 4)
 end
 
-function love.keypressed( key )
-		if key == "return" and game.state == "TITLE" then
-			--menu options
+function love.keypressed(key)
+	if game.state == "TITLE" then
+		game.startTimer = 120
+		if key == "return" then
 			if game.cur == 0 then
 				game.state = "GAMEPLAY"
 			elseif game.cur == 1 then
-				game.state = "SETTINGS" 
+				game.state = "SETTINGS"
 			elseif game.cur == 2 then
 				love.window.close()
 			end
-			if key == "up" then
+		elseif key == "up" then
 			game.cur = game.cur - 1
-			elseif key == "down" then
+		elseif key == "down" then
 			game.cur = game.cur + 1
 		end
-		elseif key == "return" and game.state == "GAMEPLAY" then
-			--pausing logic
-			if not game.isPaused then
-				game.isPaused = true
-			elseif game.isPaused then
-				game.isPaused = false
-			end
-		elseif key == "return" or menuTimer == 0 and game.state == "GAME OVER" then
-			game.state = "TITLE"
+		game.cur = game.cur % 3
+	elseif game.state == "GAMEPLAY" then
+		if key == "return" then
+			game.isPaused = not game.isPaused
 		end
-
-		-- cursor wrapping
-		if game.cur > 2 then
-			game.cur = 0;
-		elseif game.cur < 0 then
-			game.cur = 2
-		end
-
-		-- switch between alternate palette and normal palette
-		if key == "rshift" then
-			if not game.altPalette then
-				game.altPalette = true
-			elseif game.altPalette then
-				game.altPalette = false
-			end
-		end
+	end
 end
 
 function resetBullet()
@@ -128,8 +109,9 @@ function love.update(dt)
 	if game.state == "GAMEPLAY" then
 		
 		if not game.isPaused then
-			-- decrement timers, and initialize score to 0 when the round beginsbl
+			-- decrement timers, and initialize score to 0 when the round begins
 			game.startTimer = game.startTimer - 1
+			game.score = 0
 			if game.startTimer <= 0 then
 				comet.spawnTimer = comet.spawnTimer - 1
 				
@@ -196,18 +178,34 @@ function love.update(dt)
 		
 	end
 	
-	if game.gameOver == true then
-				game.menuTimer = game.menuTimer - 1
-				game.state = "GAME OVER"
-			end
-			if game.state == "GAME OVER" then
-				if game.menuTimer <= 0 then
-					game.state = "TITLE"
-				end
-			end
+	if game.gameOver then
+		game.menuTimer = game.menuTimer - 1
+		game.state = "GAME OVER"
+	end
+
+	-- game over logic
+	if game.state == "GAME OVER" then
+		if game.menuTimer <= 0 or love.keyboard.isDown("return") then
+			game.gameOver = false
+			game.state = "TITLE"
+		end
+	end
 end
 
 function love.draw()
+		-- DEBUG TEXT
+	love.graphics.print("ship x = "..tostring(ship.x))
+	love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
+	love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
+	love.graphics.print("isPaused = "..tostring(game.isPaused), 0, 48)
+	love.graphics.print("comet x = "..tostring(comet.x), 0, 64)
+	love.graphics.print("comet y = "..tostring(comet.y), 0, 80)
+	love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
+	love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
+	love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
+	love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
+	love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
+	print("state "..tostring(game.gameOver))
 	
 	love.graphics.setCanvas(canvas)
 
@@ -240,11 +238,8 @@ function love.draw()
 				love.graphics.draw(game.bg_dmg, 0, 0)
 				love.graphics.draw(ship.image_dmg, math.floor(ship.x), math.floor(ship.y))
 				love.graphics.draw(bullet.image_dmg, math.floor(bullet.x), math.floor(bullet.y))
-				love.graphics.draw(comet.image_dmg, math.floor(comet.x), math.floor(comet.y))if game.gameOver == true then
-							game.menuTimer = game.menuTimer - 1
-							game.state = "GAME OVER"
-						end
-						if game.state == "GAME OVER" then
+				love.graphics.draw(comet.image_dmg, math.floor(comet.x), math.floor(comet.y))
+						if game.gameOver then
 							if game.menuTimer <= 0 then
 								game.state = "TITLE"
 							end
@@ -273,20 +268,7 @@ function love.draw()
 
 	love.graphics.setCanvas()
 	-- go back to drawing on screen
-	
-	-- DEBUG TEXT
-	love.graphics.print("ship x = "..tostring(ship.x))
-	love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
-	love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
-	love.graphics.print("isPaused = "..tostring(game.isPaused), 0, 48)
-	love.graphics.print("comet x = "..tostring(comet.x), 0, 64)
-	love.graphics.print("comet y = "..tostring(comet.y), 0, 80)
-	love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
-	love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
-	love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
-	love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
-	love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
-	print("startTimer  "..tostring(game.startTimer))
+
 	-- render canvas on screen
 	love.graphics.draw(canvas, 0, 0, 0, screenScale)	
 	love.graphics.draw(canvas, 0, 0, 0, screenScale)
