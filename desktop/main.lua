@@ -29,6 +29,8 @@ function love.load()
 	
 	ship.x = 80 - 16
 	ship.y = 144 - 16
+	ship.w = 32
+	ship.h = 16
 	ship.speed = 60
 
 	ship.image    = love.graphics.newImage("res/ship.png")
@@ -41,7 +43,6 @@ function love.load()
 	bullet.h = bullet.w
 	bullet.speed = 70
 	bullet.isShot = false
-	bullet.count = 1
 
 	bullet.image     = love.graphics.newImage("res/bullet.png")
 	bullet.image_dmg = love.graphics.newImage("res/bullet_dmg.png")
@@ -84,6 +85,11 @@ function love.keypressed( key )
 			elseif game.cur == 2 then
 				love.window.close()
 			end
+			if key == "up" then
+			game.cur = game.cur - 1
+			elseif key == "down" then
+			game.cur = game.cur + 1
+		end
 		elseif key == "return" and game.state == "GAMEPLAY" then
 			--pausing logic
 			if not game.isPaused then
@@ -93,12 +99,6 @@ function love.keypressed( key )
 			end
 		elseif key == "return" or menuTimer == 0 and game.state == "GAME OVER" then
 			game.state = "TITLE"
-		end
-
-		if key == "up" then
-			game.cur = game.cur - 1
-		elseif key == "down" then
-			game.cur = game.cur + 1
 		end
 
 		-- cursor wrapping
@@ -120,7 +120,6 @@ end
 
 function resetBullet()
 	bullet.isShot = false
-	bullet.count = 1
 	bullet.x = -100
 	bullet.y = -100
 end
@@ -150,22 +149,21 @@ function love.update(dt)
 				if ship.x >= 160 - 32 then
 					ship.x = 160 - 32
 				end
-					
+
+				-- shoot bullet *only* if bullet count is equal to 1 to prevent 
 				if love.keyboard.isDown("x") or love.keyboard.isDown("c") then
-					if bullet.count == 1 then
+					if not bullet.isShot then
 						bullet.x = ship.x + 16
 						bullet.y = ship.y
-						bullet.count = 0
 						bullet.isShot = true
 					end
 				end
-					-- bullet logic
+
 				if bullet.isShot == true then
 					bullet.y = bullet.y - bullet.speed * dt
-				end	
-				-- destroy bullet if it reaches the top of the screen
-				if bullet.y == 0 then
-					resetBullet()
+					if bullet.y <= 0 then
+						resetBullet()
+					end
 				end
 				
 				-- bullet to comet collision
@@ -229,7 +227,7 @@ function love.draw()
 			if not game.altPalette then
 				love.graphics.clear()
 				love.graphics.setColor(1, 1, 1, 1)
-				love.graphics.draw(game.bg, 0, 0)
+				--love.graphics.draw(game.bg, 0, 0)
 				love.graphics.draw(ship.image, math.floor(ship.x), math.floor(ship.y))
 				love.graphics.draw(bullet.image, math.floor(bullet.x), math.floor(bullet.y))
 				love.graphics.draw(comet.image, math.floor(comet.x), math.floor(comet.y))
@@ -277,18 +275,19 @@ function love.draw()
 	-- go back to drawing on screen
 	
 	-- DEBUG TEXT
-	--love.graphics.print("ship x = "..tostring(ship.x))
-	-- love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
-	-- love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
-	-- love.graphics.print("isPaused = "..tostring(game.isPaused), 0, 48)
-	-- love.graphics.print("comet x = "..tostring(comet.x), 0, 64)
-	-- love.graphics.print("comet y = "..tostring(comet.y), 0, 80)
-	-- love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
-	-- love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
-	-- love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
-	-- love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
-	-- love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
-	-- print("startTimer  "..tostring(game.startTimer))
+	love.graphics.print("ship x = "..tostring(ship.x))
+	love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
+	love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
+	love.graphics.print("isPaused = "..tostring(game.isPaused), 0, 48)
+	love.graphics.print("comet x = "..tostring(comet.x), 0, 64)
+	love.graphics.print("comet y = "..tostring(comet.y), 0, 80)
+	love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
+	love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
+	love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
+	love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
+	love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
+	print("startTimer  "..tostring(game.startTimer))
 	-- render canvas on screen
 	love.graphics.draw(canvas, 0, 0, 0, screenScale)	
+	love.graphics.draw(canvas, 0, 0, 0, screenScale)
 end
