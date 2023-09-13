@@ -14,35 +14,37 @@ function love.load()
 
 	game.isPaused   = false
 	game.gameOver   = false
-	game.text = "nothing" -- debug text
-	game.state = "TITLE"
-	game.score = 0
-	game.menuTimer = 180
+	game.text       = "nothing" -- debug text
+	game.state      = "TITLE"
+	game.score      = 0
+	game.highScore  = 0
+	game.menuTimer  = 180
 	game.startTimer = 180
 
 	UI.font      = love.graphics.setNewFont("res/fonts/monobit.ttf", 16)
 	UI.bg        = love.graphics.newImage("res/Graphics/default/bg.png")
 	UI.title     = love.graphics.newImage("res/Graphics/default/UI/Title/title.png")
 	UI.startText = love.graphics.newImage("res/Graphics/default/UI/Title/press_start.png")
+	UI.scoreText = love.graphics.newImage("res/Graphics/default/UI/Title/score.png")
 	
 	
-	ship.x = 80 - 16
-	ship.y = 144 - 16
-	ship.w = 32
-	ship.h = 16
+	ship.x     = 80 - 16
+	ship.y     = 144 - 16
+	ship.w     = 32
+	ship.h     = 16
 	ship.speed = 60
 
-	ship.image    = love.graphics.newImage("res/Graphics/default/ship.png")
+	ship.image = love.graphics.newImage("res/Graphics/default/ship.png")
 
 	-- store bullet off screen
-	bullet.x = -100
-	bullet.y = -100
-	bullet.w = 4
-	bullet.h = bullet.w
-	bullet.speed = 70
+	bullet.x      = -100
+	bullet.y      = -100
+	bullet.w      = 4
+	bullet.h      = bullet.w
+	bullet.speed  = 70
 	bullet.isShot = false
 
-	bullet.image     = love.graphics.newImage("res/Graphics/default/bullet.png")
+	bullet.image  = love.graphics.newImage("res/Graphics/default/bullet.png")
 
 	
 	comet.x = love.math.random(1, gameWidth - 16)
@@ -76,6 +78,7 @@ function love.keypressed(key)
 		comet.y = -200
 		comet.spawnTimer = 60
 		game.startTimer = 120
+		game.score = 0
 		if key == "return" then
 			game.state = "GAMEPLAY"
 		end
@@ -97,9 +100,8 @@ function love.update(dt)
 	if game.state == "GAMEPLAY" then
 		
 		if not game.isPaused then
-			-- decrement timers, and initialize score to 0 when the round begins
+			-- decrement timers when the round begins
 			game.startTimer = game.startTimer - 1
-			game.score = 0
 			if game.startTimer <= 0 then
 				comet.spawnTimer = comet.spawnTimer - 1
 				
@@ -142,7 +144,7 @@ function love.update(dt)
 					comet.x = love.math.random(1, gameWidth - 16)
 					comet.y = -200
 					comet.spawnTimer = 60
-
+					game.score = game. score + 100
 					resetBullet()
 				end	
 				-- comet logic
@@ -180,18 +182,18 @@ function love.update(dt)
 end
 
 function love.draw()
-		-- DEBUG TEXT
-	love.graphics.print("ship x = "..tostring(ship.x))
-	love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
-	love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
-	love.graphics.print("isPaused = "..tostring(game.isPaused), 0, 48)
-	love.graphics.print("comet x = "..tostring(comet.x), 0, 64)
-	love.graphics.print("comet y = "..tostring(comet.y), 0, 80)
-	love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
-	love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
-	love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
-	love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
-	love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
+	-- DEBUG TEXT
+	--love.graphics.print("ship x = "..tostring(ship.x))
+	--love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
+	--love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
+	--love.graphics.print("isPaused = "..tostring(game.isPaused), 0, 48)
+	--love.graphics.print("comet x = "..tostring(comet.x), 0, 64)
+	--love.graphics.print("comet y = "..tostring(comet.y), 0, 80)
+	--love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
+	--love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
+	--love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
+	--love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
+	--love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
 	
 	love.graphics.setCanvas(canvas)
 
@@ -207,6 +209,8 @@ function love.draw()
 			love.graphics.draw(ship.image, math.floor(ship.x), math.floor(ship.y))
 			love.graphics.draw(bullet.image, math.floor(bullet.x), math.floor(bullet.y))
 			love.graphics.draw(comet.image, math.floor(comet.x), math.floor(comet.y))
+			love.graphics.draw(UI.scoreText, gameWidth / 2 - 20, 0)
+			love.graphics.print(game.score, gameWidth / 2 + 30 - 20, -1)
 			if game.startTimer > 0 then
 				love.graphics.print("GET READY", gameWidth / 2 - 20, gameHeight / 2 - 16)
 			end
@@ -214,13 +218,7 @@ function love.draw()
 				love.graphics.print("PAUSE", gameWidth / 2 - 10, gameWidth / 2 - 16)
 			end
 		elseif game.state == "GAME OVER" then
-			if not game.altPalette then
-				love.graphics.print("GAME OVER", gameWidth / 2 - 20, gameHeight / 2 - 16)
-			elseif game.altPalette then
-				love.graphics.setColor(32/255, 70/255, 49/255)
-				love.graphics.print("GAME OVER", gameWidth / 2 - 20, gameHeight / 2 - 16)
-				love.graphics.setColor(1, 1, 1)
-			end
+			love.graphics.print("GAME OVER", gameWidth / 2 - 20, gameHeight / 2 - 16)
 		end
 
 	love.graphics.setCanvas()
