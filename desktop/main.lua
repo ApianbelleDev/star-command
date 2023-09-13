@@ -84,10 +84,29 @@ function reset()
 	game.score = 0	
 end
 
-function calculateHighScore()
+function getHighScore()
 	if game.score > game.highScore then
 		game.highScore = game.score
 		return game.highScore
+	end
+end
+
+function readHighScore()
+	local highscoreString = love.filesystem.read("highscore.txt")
+	if highscoreString then
+		game.highscore = tonumber(highscoreString)
+	else
+		-- file not created yet
+		game.highscore = 0
+	end
+
+	return game.highscore
+end
+
+function writeHighScore()
+	game. highscore = readHighScore()
+	if game.score > game.highscore then
+		love.filesystem.write("highscore.txt", game.score)
 	end
 end
 
@@ -112,7 +131,9 @@ function resetBullet()
 end
 
 function love.update(dt)
-	if game.state == "GAMEPLAY" then
+	if game.state == "TITLE" then
+		readHighScore()
+	elseif game.state == "GAMEPLAY" then
 		
 		if not game.isPaused then
 			-- decrement timers when the round begins
@@ -175,8 +196,9 @@ function love.update(dt)
 				-- destroy comet if it hits the ground, and trigger game over
 				if comet.y >= gameHeight then
 					game.gameOver = true
-					calculateHighScore()
-				
+					getHighScore()
+					writeHighScore()
+									
 				end
 			end
 		end
@@ -198,9 +220,9 @@ function love.update(dt)
 end
 
 function love.draw()
-	
+	print(game.highscore)	
 	love.graphics.setCanvas(canvas)
-
+	
 		if game.state == "TITLE" then
 			love.graphics.clear()
 			love.graphics.draw(UI.bg, 0, 0)
