@@ -28,7 +28,7 @@ function love.load()
 	UI.scoreText = love.graphics.newImage("res/Graphics/default/UI/Title/score.png")
 	
 	
-	ship.x     = 80 - 16
+	ship.x     = 80 - 160
 	ship.y     = 144 - 16
 	ship.w     = 32
 	ship.h     = 16
@@ -70,15 +70,30 @@ function love.load()
 	love.window.setMode(gameWidth * 4, gameHeight * 4)
 end
 
+function reset()
+	comet.isMoving = false
+	comet.x = love.math.random(0, gameWidth - comet.w)
+	comet.y = -200
+	comet.spawnTimer = 60
+	bullet.x = -100
+	bullet.y = -100
+	ship.x = 80 - 16
+	ship.y = 144-16
+	game.menuTimer = 180
+	game.startTimer = 180
+	game.score = 0	
+end
+
+function calculateHighScore()
+	if game.score > game.highScore then
+		game.highScore = game.score
+		return game.highScore
+	end
+end
+
 function love.keypressed(key)
 	if game.state == "TITLE" then
-		-- reset comet pos so if game restarts, it doesn't immediately game-over again
-		comet.isMoving = false
-		comet.x = love.math.random(0, gameWidth - comet.w)
-		comet.y = -200
-		comet.spawnTimer = 60
-		game.startTimer = 120
-		game.score = 0
+		reset()
 		if key == "return" then
 			game.state = "GAMEPLAY"
 		end
@@ -160,6 +175,7 @@ function love.update(dt)
 				-- destroy comet if it hits the ground, and trigger game over
 				if comet.y >= gameHeight then
 					game.gameOver = true
+					calculateHighScore()
 				
 				end
 			end
@@ -182,25 +198,14 @@ function love.update(dt)
 end
 
 function love.draw()
-	-- DEBUG TEXT
-	--love.graphics.print("ship x = "..tostring(ship.x))
-	--love.graphics.print("bulletCount = "..tostring(bullet.count), 0, 16)
-	--love.graphics.print("isShot = "..tostring(bullet.isShot), 0, 32)
-	--love.graphics.print("isPaused = "..tostring(game.isPaused), 0, 48)
-	--love.graphics.print("comet x = "..tostring(comet.x), 0, 64)
-	--love.graphics.print("comet y = "..tostring(comet.y), 0, 80)
-	--love.graphics.print("cometSpawnTimer"..tostring(comet.spawnTimer), 0, 96)
-	--love.graphics.print("comet.isMoving = "..tostring(comet.isMoving), 0, 112)
-	--love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
-	--love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
-	--love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
 	
 	love.graphics.setCanvas(canvas)
 
 		if game.state == "TITLE" then
 			love.graphics.clear()
 			love.graphics.draw(UI.bg, 0, 0)
-			love.graphics.draw(UI.title, 10, 0)
+			-- love.graphics.print(game.highScore, gameWidth / 2, 0)
+			love.graphics.draw(UI.title, 16, 16)
 			love.graphics.draw(UI.startText, 50, 100)
 		elseif game.state == "GAMEPLAY" then
 			love.graphics.clear()
