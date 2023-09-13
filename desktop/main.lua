@@ -7,25 +7,24 @@ function love.load()
 
 	-- setup tables for objects
 	game   = {}
+	UI     = {}
 	ship   = {}
 	bullet = {}
 	comet  = {}
 
 	game.isPaused   = false
 	game.gameOver   = false
-	game.altPalette = true
 	game.text = "nothing" -- debug text
 	game.state = "TITLE"
-	game.cur = 0
 	game.score = 0
-	game.font = love.graphics.setNewFont("res/fonts/monobit.ttf", 16)
 	game.menuTimer = 180
 	game.startTimer = 180
 
-	game.bg    = love.graphics.newImage("res/bg.png")
-	game.bg_dmg = love.graphics.newImage("res/bg_dmg.png")
-	game.title = love.graphics.newImage("res/title.png")
-	game.title_dmg = love.graphics.newImage("res/title_dmg.png")
+	UI.font      = love.graphics.setNewFont("res/fonts/monobit.ttf", 16)
+	UI.bg        = love.graphics.newImage("res/Graphics/default/bg.png")
+	UI.title     = love.graphics.newImage("res/Graphics/default/UI/Title/title.png")
+	UI.startText = love.graphics.newImage("res/Graphics/default/UI/Title/press_start.png")
+	
 	
 	ship.x = 80 - 16
 	ship.y = 144 - 16
@@ -33,8 +32,7 @@ function love.load()
 	ship.h = 16
 	ship.speed = 60
 
-	ship.image    = love.graphics.newImage("res/ship.png")
-	ship.image_dmg = love.graphics.newImage("res/ship_dmg.png")
+	ship.image    = love.graphics.newImage("res/Graphics/default/ship.png")
 
 	-- store bullet off screen
 	bullet.x = -100
@@ -44,8 +42,7 @@ function love.load()
 	bullet.speed = 70
 	bullet.isShot = false
 
-	bullet.image     = love.graphics.newImage("res/bullet.png")
-	bullet.image_dmg = love.graphics.newImage("res/bullet_dmg.png")
+	bullet.image     = love.graphics.newImage("res/Graphics/default/bullet.png")
 
 	
 	comet.x = love.math.random(1, gameWidth - 16)
@@ -58,8 +55,7 @@ function love.load()
 	comet.spawnTimer = 60 
 	comet.isMoving = false
 
-	comet.image    = love.graphics.newImage("res/comet.png")
-	comet.image_dmg = love.graphics.newImage("res/comet_dmg.png")
+	comet.image    = love.graphics.newImage("res/Graphics/default/comet.png")
 
 	-- override default filter so game when scaled up doesn't look blurry
 	love.graphics.setDefaultFilter("nearest", nil, 0)
@@ -81,29 +77,14 @@ function love.keypressed(key)
 		comet.spawnTimer = 60
 		game.startTimer = 120
 		if key == "return" then
-			if game.cur == 0 then
-				game.state = "GAMEPLAY"
-			elseif game.cur == 1 then
-				game.state = "SETTINGS"
-			elseif game.cur == 2 then
-				love.window.close()
-			end
-		elseif key == "up" then
-			game.cur = game.cur - 1
-		elseif key == "down" then
-			game.cur = game.cur + 1
+			game.state = "GAMEPLAY"
 		end
-		game.cur = game.cur % 3
 	elseif game.state == "GAMEPLAY" then
 		if key == "return" then
 			game.isPaused = not game.isPaused
 		end
 	end
 
-	-- use right shift to change palettes for testing purposes only!!!!!!!
-	if key == "rshift" then
-		game.altPalette = not game.altPalette
-	end
 end
 
 function resetBullet()
@@ -211,61 +192,28 @@ function love.draw()
 	love.graphics.print("gameOver = "..tostring(game.gameOver), 0, 128);
 	love.graphics.print("altPalette = "..tostring(game.altPalette), 0, 144)
 	love.graphics.print("menuTimer = " ..tostring(game.menuTimer), 0, 160)
-	print("state "..tostring(game.gameOver))
 	
 	love.graphics.setCanvas(canvas)
 
 		if game.state == "TITLE" then
-			if not game.altPalette then
-				love.graphics.clear()
-				love.graphics.draw(game.title, 0, 0)
-			elseif game.altPalette then
-				love.graphics.clear()
-				love.graphics.draw(game.title_dmg, 0, 0)
+			love.graphics.clear()
+			love.graphics.draw(UI.bg, 0, 0)
+			love.graphics.draw(UI.title, 10, 0)
+			love.graphics.draw(UI.startText, 50, 100)
+		elseif game.state == "GAMEPLAY" then
+			love.graphics.clear()
+			love.graphics.setColor(1, 1, 1, 1)
+			love.graphics.draw(UI.bg, 0, 0)
+			love.graphics.draw(ship.image, math.floor(ship.x), math.floor(ship.y))
+			love.graphics.draw(bullet.image, math.floor(bullet.x), math.floor(bullet.y))
+			love.graphics.draw(comet.image, math.floor(comet.x), math.floor(comet.y))
+			if game.startTimer > 0 then
+				love.graphics.print("GET READY", gameWidth / 2 - 20, gameHeight / 2 - 16)
 			end
-		end
-		if game.state == "GAMEPLAY" then
-		
-			if not game.altPalette then
-				love.graphics.clear()
-				love.graphics.setColor(1, 1, 1, 1)
-				love.graphics.draw(game.bg, 0, 0)
-				love.graphics.draw(ship.image, math.floor(ship.x), math.floor(ship.y))
-				love.graphics.draw(bullet.image, math.floor(bullet.x), math.floor(bullet.y))
-				love.graphics.draw(comet.image, math.floor(comet.x), math.floor(comet.y))
-				if game.startTimer > 0 then
-					love.graphics.print("GET READY", gameWidth / 2 - 20, gameHeight / 2 - 16)
-				end
-				if game.isPaused then
-					love.graphics.print("PAUSE", gameWidth / 2 - 10, gameWidth / 2 - 16)
-				end
-			elseif game.altPalette then
-				love.graphics.clear()
-				love.graphics.draw(game.bg_dmg, 0, 0)
-				love.graphics.draw(ship.image_dmg, math.floor(ship.x), math.floor(ship.y))
-				love.graphics.draw(bullet.image_dmg, math.floor(bullet.x), math.floor(bullet.y))
-				love.graphics.draw(comet.image_dmg, math.floor(comet.x), math.floor(comet.y))
-						if game.gameOver then
-							if game.menuTimer <= 0 then
-								game.state = "TITLE"
-							end
-						end
-				if game.startTimer > 0 then
-					love.graphics.setColor(32/255, 70/255, 49/255)
-					love.graphics.print("GET READY", gameWidth / 2 - 20, gameHeight / 2 - 16)
-					love.graphics.setColor(1, 1, 1)
-				end
-				if game.isPaused then
-					love.graphics.setColor(32/255, 70/255, 49/255)
-					love.graphics.print("PAUSE", gameWidth / 2 - 10, gameHeight / 2 - 16)
-					love.graphics.setColor(1, 1, 1)
-				end
+			if game.isPaused then
+				love.graphics.print("PAUSE", gameWidth / 2 - 10, gameWidth / 2 - 16)
 			end
-		end
-		
-		if game.state == "OPTIONS" then
-		end	
-		if game.state == "GAME OVER" then
+		elseif game.state == "GAME OVER" then
 			if not game.altPalette then
 				love.graphics.print("GAME OVER", gameWidth / 2 - 20, gameHeight / 2 - 16)
 			elseif game.altPalette then
@@ -276,9 +224,6 @@ function love.draw()
 		end
 
 	love.graphics.setCanvas()
-	-- go back to drawing on screen
-
 	-- render canvas on screen
 	love.graphics.draw(canvas, 0, 0, 0, screenScale)	
-	love.graphics.draw(canvas, 0, 0, 0, screenScale)
 end
