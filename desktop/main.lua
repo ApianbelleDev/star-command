@@ -17,7 +17,7 @@ function love.load()
 	game.text       = "nothing" -- debug text
 	game.state      = "TITLE"
 	game.score      = 0
-	game.highScore  = 0
+	game.highscore  = 0
 	game.menuTimer  = 180
 	game.startTimer = 180
 
@@ -85,9 +85,9 @@ function reset()
 end
 
 function getHighScore()
-	if game.score > game.highScore then
-		game.highScore = game.score
-		return game.highScore
+	if game.score > game.highscore then
+		game.highs1core = game.score
+		return game.highscore
 	end
 end
 
