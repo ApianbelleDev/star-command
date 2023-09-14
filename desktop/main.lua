@@ -8,6 +8,7 @@ function love.load()
 	-- setup tables for objects
 	game   = {}
 	UI     = {}
+	audio  = {}
 	ship   = {}
 	bullet = {}
 	comet  = {}
@@ -22,19 +23,27 @@ function love.load()
 	game.startTimer = 180
 
 	UI.font      = love.graphics.setNewFont("res/fonts/monobit.ttf", 16)
-	UI.bg        = love.graphics.newImage("res/Graphics/default/bg.png")
-	UI.title     = love.graphics.newImage("res/Graphics/default/UI/Title/title.png")
-	UI.startText = love.graphics.newImage("res/Graphics/default/UI/Title/press_start.png")
-	UI.scoreText = love.graphics.newImage("res/Graphics/default/UI/Title/score.png")
+	UI.bg        = love.graphics.newImage("res/graphics/default/bg.png")
+	UI.title     = love.graphics.newImage("res/graphics/default/UI/Title/title.png")
+	UI.startText = love.graphics.newImage("res/graphics/default/UI/Title/press_start.png")
+	UI.scoreText = love.graphics.newImage("res/graphics/default/UI/Title/score.png")
+
+	audio.musTitle = love.audio.newSource("res/audio/mus_title.wav", "stream")
+	audio.sfxShoot = love.audio.newSource("res/audio/sfx_shoot.wav", "static")
+	audio.sfxHit   = love.audio.newSource("res/audio/sfx_hit.wav", "static")
+	audio.sfxDeath = love.audio.newSource("res/audio/sfx_death.wav", "static")
+
+	-- set musTitle to always loop
+	audio.musTitle:setLooping(true)
 	
-	
+		
 	ship.x     = 80 - 160
 	ship.y     = 144 - 16
 	ship.w     = 32
 	ship.h     = 16
 	ship.speed = 60
 
-	ship.image = love.graphics.newImage("res/Graphics/default/ship.png")
+	ship.image = love.graphics.newImage("res/graphics/default/ship.png")
 
 	-- store bullet off screen
 	bullet.x      = -100
@@ -44,7 +53,7 @@ function love.load()
 	bullet.speed  = 70
 	bullet.isShot = false
 
-	bullet.image  = love.graphics.newImage("res/Graphics/default/bullet.png")
+	bullet.image  = love.graphics.newImage("res/graphics/default/bullet.png")
 
 	
 	comet.x = love.math.random(1, gameWidth - 16)
@@ -57,7 +66,7 @@ function love.load()
 	comet.spawnTimer = 60 
 	comet.isMoving = false
 
-	comet.image    = love.graphics.newImage("res/Graphics/default/comet.png")
+	comet.image    = love.graphics.newImage("res/graphics/default/comet.png")
 
 	-- override default filter so game when scaled up doesn't look blurry
 	love.graphics.setDefaultFilter("nearest", nil, 0)
@@ -81,7 +90,7 @@ function reset()
 	ship.y = 144-16
 	game.menuTimer = 180
 	game.startTimer = 180
-	game.score = 0	
+	game.score = 0
 end
 
 function getHighScore()
@@ -133,11 +142,17 @@ end
 function love.update(dt)
 	if game.state == "TITLE" then
 		readHighScore()
+		love.audio.play(audio.musTitle)
 	elseif game.state == "GAMEPLAY" then
 		
 		if not game.isPaused then
 			-- decrement timers when the round begins
 			game.startTimer = game.startTimer - 1
+			love.audio.stop(audio.musTitle)
+			-- prevent score from going below 0
+			if game.score <= 0 then
+				game.score = 0
+			end
 			if game.startTimer <= 0 then
 				comet.spawnTimer = comet.spawnTimer - 1
 				
@@ -157,10 +172,10 @@ function love.update(dt)
 				if ship.x >= 160 - 32 then
 					ship.x = 160 - 32
 				end
-
-				-- shoot bullet *only* if bullet count is equal to 1 to prevent 
+ 
 				if love.keyboard.isDown("x") or love.keyboard.isDown("c") then
 					if not bullet.isShot then
+						love.audio.play(audio.sfxShoot)
 						bullet.x = ship.x + 16
 						bullet.y = ship.y
 						bullet.isShot = true
@@ -171,11 +186,13 @@ function love.update(dt)
 					bullet.y = bullet.y - bullet.speed * dt
 					if bullet.y <= 0 then
 						resetBullet()
+						game.score = game.score - 500
 					end
 				end
 				
 				-- bullet to comet collision
 				if bullet.y >= comet.y and bullet.y <= comet.y + comet.h and bullet.x >= comet.x and bullet.x <= comet.x + comet.w then	
+					love.audio.play(audio.sfxHit)
 					comet.isMoving = false
 					comet.x = love.math.random(1, gameWidth - 16)
 					comet.y = -200
@@ -195,6 +212,7 @@ function love.update(dt)
 						
 				-- destroy comet if it hits the ground, and trigger game over
 				if comet.y >= gameHeight then
+					love.audio.play(audio.sfxDeath)
 					game.gameOver = true
 									
 				end
