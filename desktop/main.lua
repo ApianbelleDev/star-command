@@ -86,7 +86,7 @@ end
 
 function getHighScore()
 	if game.score > game.highscore then
-		game.highs1core = game.score
+		game.highscore = game.score
 		return game.highscore
 	end
 end
@@ -196,8 +196,6 @@ function love.update(dt)
 				-- destroy comet if it hits the ground, and trigger game over
 				if comet.y >= gameHeight then
 					game.gameOver = true
-					getHighScore()
-					writeHighScore()
 									
 				end
 			end
@@ -208,6 +206,8 @@ function love.update(dt)
 	if game.gameOver then
 		game.menuTimer = game.menuTimer - 1
 		game.state = "GAME OVER"
+		getHighScore()
+		writeHighScore()
 	end
 
 	-- game over logic
@@ -226,9 +226,9 @@ function love.draw()
 		if game.state == "TITLE" then
 			love.graphics.clear()
 			love.graphics.draw(UI.bg, 0, 0)
-			-- love.graphics.print(game.highScore, gameWidth / 2, 0)
 			love.graphics.draw(UI.title, 16, 16)
 			love.graphics.draw(UI.startText, 50, 100)
+			love.graphics.print("Hi-score: "..tostring(game.highscore), gameWidth / 2 - 30, 0)
 		elseif game.state == "GAMEPLAY" then
 			love.graphics.clear()
 			love.graphics.setColor(1, 1, 1, 1)
