@@ -28,13 +28,14 @@ function love.load()
 	UI.startText = love.graphics.newImage("res/graphics/default/UI/Title/press_start.png")
 	UI.scoreText = love.graphics.newImage("res/graphics/default/UI/Title/score.png")
 
-	audio.musTitle = love.audio.newSource("res/audio/mus_title.wav", "stream")
+	audio.musTitle1 = love.audio.newSource("res/audio/mus_title_part_1.wav", "stream")
+	audio.musTitle2 = love.audio.newSource("res/audio/mus_title_part_2.wav", "stream")
 	audio.sfxShoot = love.audio.newSource("res/audio/sfx_shoot.wav", "static")
 	audio.sfxHit   = love.audio.newSource("res/audio/sfx_hit.wav", "static")
 	audio.sfxDeath = love.audio.newSource("res/audio/sfx_death.wav", "static")
-
+	audio.titleTimer = audio.musTitle1:getDuration("seconds")
 	-- set musTitle to always loop
-	audio.musTitle:setLooping(true)
+	audio.musTitle2:setLooping(true)
 	
 		
 	ship.x     = 80 - 160
@@ -91,6 +92,7 @@ function reset()
 	game.menuTimer = 180
 	game.startTimer = 180
 	game.score = 0
+	audio.titleTimer = audio.musTitle1:getDuration(seconds)
 end
 
 function getHighScore()
@@ -142,13 +144,25 @@ end
 function love.update(dt)
 	if game.state == "TITLE" then
 		readHighScore()
-		love.audio.play(audio.musTitle)
+		audio.titleTimer = math.max(0, audio.titleTimer - dt)
+		
+		if audio.titleTimer <= 0 then
+			audio.musTitle1:stop()
+			if not audio.musTitle2:isPlaying() then
+				audio.musTitle2:play()
+			end
+		elseif not audio.musTitle1:isPlaying() then
+			audio.musTitle1:play()
+		end
 	elseif game.state == "GAMEPLAY" then
 		
 		if not game.isPaused then
 			-- decrement timers when the round begins
 			game.startTimer = game.startTimer - 1
-			love.audio.stop(audio.musTitle)
+			if audio.musTitle1:isPlaying() then
+				love.audio.stop(audio.musTitle1)
+			end
+			love.audio.stop(audio.musTitle2)
 			-- prevent score from going below 0
 			if game.score <= 0 then
 				game.score = 0
@@ -238,7 +252,7 @@ function love.update(dt)
 end
 
 function love.draw()
-	print(game.highscore)	
+	print(audio.titleTimer)	
 	love.graphics.setCanvas(canvas)
 	
 		if game.state == "TITLE" then
