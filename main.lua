@@ -205,7 +205,7 @@ function love.update(dt)
 				end
 				
 				-- bullet to comet collision
-				if bullet.y >= comet.y and bullet.y <= comet.y + comet.h and bullet.x >= comet.x and bullet.x <= comet.x + comet.w then	
+				if bullet.y >= comet.y and bullet.y <= comet.y + comet.h and bullet.x >= comet.x - 8 and bullet.x <= comet.x + comet.w + 8 then	
 					love.audio.play(audio.sfxHit)
 					comet.isMoving = false
 					comet.x = love.math.random(1, gameWidth - 16)
