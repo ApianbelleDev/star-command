@@ -144,8 +144,7 @@ end
 function love.update(dt)
 	if game.state == "TITLE" then
 		readHighScore()
-		audio.titleTimer = math.max(0, audio.titleTimer - dt)
-		
+		audio.titleTimer = math.max(0, audio.titleTimer - dt)		
 		if audio.titleTimer <= 0 then
 			audio.musTitle1:stop()
 			if not audio.musTitle2:isPlaying() then
